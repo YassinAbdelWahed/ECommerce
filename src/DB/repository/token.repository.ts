@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseRepository } from './database.repository';
-import { TokenDocument as TDocument, Token } from '../models';
+import { TokenDocument as TDocument, Token } from '../model';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 

@@ -91,7 +91,13 @@ export abstract class DatabaseRepository<
     options?: QueryOptions<TDocument> | undefined;
     page?: number | 'all';
     size?: number;
-  }): Promise<TDocument[] | [] | Lean<TDocument>[] | any> {
+  }): Promise<{
+    docsCount?: number;
+    limit?: number;
+    pages?: number;
+    currentPage?: number | undefined;
+    result: TDocument[] | Lean<TDocument>[] | any;
+  }> {
     let docsCount: number | undefined = undefined;
     let pages: number | undefined = undefined;
     if (page !== 'all') {
@@ -141,7 +147,7 @@ export abstract class DatabaseRepository<
           __v: { $add: ['$__v', 1] },
         },
       });
-      return await this.model.updateOne(filter, update, options);
+      return await this.model.updateOne(filter || {}, update, options);
     }
 
     console.log({ ...update, $inc: { __v: 1 } });
@@ -178,11 +184,28 @@ export abstract class DatabaseRepository<
     update: UpdateQuery<TDocument>;
     options?: QueryOptions<TDocument> | null;
   }): Promise<Lean<TDocument> | TDocument | null> {
+    if (Array.isArray(update)) {
+      update.push({
+        $set: {
+          __v: { $add: ['$__v', 1] },
+        },
+      });
+      return await this.model.findOneAndUpdate(filter || {}, update, options);
+    }
+
     return await this.model.findOneAndUpdate(
       filter,
       { ...update, $inc: { __v: 1 } },
       options,
     );
+  }
+
+  async findOneAndDelete({
+    filter,
+  }: {
+    filter: RootFilterQuery<TRawDocument>;
+  }): Promise<Lean<TDocument> | TDocument | null> {
+    return await this.model.findOneAndDelete(filter || {});
   }
 
   async deleteOne({

@@ -5,27 +5,22 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  compareHash,
   IUser,
   LoginCredentialsResponse,
-  OtpEnum,
-  ProviderEnum,
   SecurityService,
   TokenService,
 } from 'src/common';
 import { OtpRepository, UserDocument, UserRepository } from 'src/DB';
 import {
   confirmEmailDto,
-  loginBodyDto,
+  LoginBodyDto,
   resendConfirmEmailDto,
   SignupBodyDto,
-} from './dtos';
+} from './dto/signup.dto';
 
-import { emailEvent } from 'src/common/utils/email/email.event';
+import { generateNumericalOtp } from 'src/common/utils/security/otp.security';
 import { Types } from 'mongoose';
-import { generateNumericalOtp } from 'src/common';
-import { sign } from 'jsonwebtoken';
-import { JwtService } from '@nestjs/jwt';
+import { OtpEnum, ProviderEnum } from 'src/common/enums';
 
 @Injectable()
 export class AuthenticationService {
@@ -132,7 +127,7 @@ export class AuthenticationService {
     return 'Done';
   }
 
-  async login(data: loginBodyDto): Promise<LoginCredentialsResponse> {
+  async login(data: LoginBodyDto): Promise<LoginCredentialsResponse> {
     const { email, password } = data;
     const user = await this.userRepository.findOne({
       filter: {
